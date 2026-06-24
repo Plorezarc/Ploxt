@@ -1,0 +1,14 @@
+# Ploxt Desktop - Python dependencies
+# Install with:  pip install -r requirements.txt
+
+# ── Core UI ──────────────────────────────────────────────────────────────────
+customtkinter>=5.2.2        # Material-friendly CTk widgets
+
+# ── Image handling (thumbnails) ───────────────────────────────────────────────
+Pillow>=10.0.0
+
+# ── Video download backend ────────────────────────────────────────────────────
+yt-dlp>=2024.1.0
+
+# ── Optional: faster JSON (used by yt-dlp internally) ────────────────────────
+# ujson>=5.0.0
