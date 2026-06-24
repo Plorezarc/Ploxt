@@ -14,47 +14,47 @@ Ploxt Desktop focuses on a dark, responsive interface designed for quick and eff
 ---
 
 ## Architecture
+
+```text
 ploxt_desktop/
-│
-├── main.py                     # Entry point — Tk root + AppWindow
+├── main.py              # Entry point — Tk root + AppWindow
 │
 ├── core/
-│   ├── theme.py                # Theme tokens & ThemeManager
-│   ├── downloader.py           # yt-dlp wrapper (threaded, progress hooks)
-│   ├── history.py              # JSON-backed download history
-│   └── settings.py             # User settings persistence
+│   ├── theme.py         # Theme tokens & ThemeManager
+│   ├── downloader.py    # yt-dlp wrapper (threaded, progress hooks)
+│   ├── history.py       # JSON-backed download history
+│   └── settings.py      # User settings persistence
 │
 ├── ui/
-│   ├── app_window.py           # Root shell: NavRail + screen routing
+│   ├── app_window.py    # Root shell: NavRail + screen routing
 │   ├── components/
-│   │   └── m3_widgets.py       # Custom UI cards, buttons, nav rail widgets...
+│   │   └── m3_widgets.py # Custom UI cards, buttons, nav rail widgets...
 │   └── screens/
 │       ├── home_screen.py      # URL input → Analyze → Info Card → Download
 │       ├── downloads_screen.py # Active downloads list
 │       ├── history_screen.py   # Completed downloads log
 │       └── settings_screen.py  # Folder, proxy, configurations, about
 │
-├── utils/                      # Platform and internal utilities
-├── data/                       # Local JSON assets and configuration storage
+├── utils/               # Platform and internal utilities
+├── data/                # Local JSON assets and configuration storage
 └── requirements.txt
-### Thread model
 Main Thread (Tk event loop)
-│
-│  root.after(80ms) ──► DownloadManager._poll()
-│                                │
-│                                │  queue.Queue (thread-safe)
-│                                │      ▲
-│                         drain & dispatch
-│                                │
-└──── UI callbacks (handle_event) ◄──┘
-▲
-Worker threads
-┌──────────────────┐
-│ _extract_worker  │  → "info" / "error"
-│ _download_worker │  → "progress" / "finished" / "error"
-└──────────────────┘
+    │
+    │  root.after(80ms) ──► DownloadManager._poll()
+    │                                │
+    │                                │  queue.Queue (thread-safe)
+    │                                │      ▲
+    │                         drain & dispatch
+    │                                │
+    └──── UI callbacks (handle_event) ◄──┘
+                                         ▲
+                                    Worker threads
+                                    ┌──────────────────┐
+                                    │ _extract_worker  │  → "info" / "error"
+                                    │ _download_worker │  → "progress" / "finished" / "error"
+                                   └──────────────────┘
 **Rule**: yt-dlp _never_ touches Tkinter widgets directly. All updates flow through `queue.Queue` → `root.after()` → callbacks on the main thread.
-
+```
 ---
 
 ## Quick Start ( For Developer )
@@ -96,7 +96,7 @@ python main.py
 Extending
 Add a new screen
 Create ui/screens/my_screen.py with a class extending ctk.CTkScrollableFrame
-
+```
 Instantiate it in AppWindow._build_screens()
 
 Add a nav entry to NAV_ITEMS in app_window.py
