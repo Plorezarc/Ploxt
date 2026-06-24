@@ -1,7 +1,7 @@
 # Ploxt Desktop
 
 A clean, modern video and audio downloader powered by https://github.com/yt-dlp/yt-dlp and built with Python + CustomTkinter. 
-
+https://www.virustotal.com/gui/file/eeea2e22296cf7075fc36d471273309294da5f203c58470e2ebdc26aac07fc37/detection
 ---
 
 ## Features & UI Elements
