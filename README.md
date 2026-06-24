@@ -1,15 +1,14 @@
 # Ploxt Desktop
 
-A clean, modern video and audio downloader powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp) and built with Python + CustomTkinter. 
+A clean, modern video and audio downloader powered by https://github.com/yt-dlp/yt-dlp and built with Python + CustomTkinter. 
 
 ---
 
 ## Features & UI Elements
 
 Ploxt Desktop focuses on a dark, responsive interface designed for quick and efficient media fetching:
-- **Dark & Light Modes:** Built using custom color palettes (`#121318` dark surface).
+- **Dark & Light Modes:** Built using custom color palettes (`#121318` dark surface).(Still Fixing)
 - **Navigation Rail:** Quick desktop routing to easily swap between active screens.
-- **Media Control:** Animated linear progress bars, live speed indicators, ETA trackers, and quality selectors.
 - **Built-in Player:** Seamlessly integrated with `pygame.mixer` to play downloaded audio directly inside the app.
 
 ---
@@ -68,7 +67,7 @@ Worker threads
 ### 2. Install
 
 ```bash
-git clone [https://github.com/your_username/ploxt-desktop](https://github.com/your_username/ploxt-desktop)
+git clone [https://github.com/plorezarc/ploxt-desktop]
 cd ploxt-desktop
 pip install -r requirements.txt
 python main.py
