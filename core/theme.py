@@ -1,27 +1,22 @@
 """
 core/theme.py
-─────────────────────────────────────────────────────────────────────────────
-Material You colour tokens, typography scale, and shape constants.
+─────────────────────────────────────────────────────────────────
+Material-inspired colour tokens, typography scale, and shape constants.
 
-Ported from the original Material You palette:
-  Original Material You color tokens.
-
-Design decisions
-  • Dark  surface  : #121318  (MD3 Surface)
-  • Light surface  : #F9F9FF  (MD3 Surface)
-  • Primary accent : #BEC2FF  (muted cornflower default seed)
-  • Corner radius  : 16 dp equivalent (used on cards, dialogs)
-  • Font            : system default (falls back to Inter/Segoe gracefully)
+This module provides color and shape tokens used across the UI. The
+colors are adapted from Material palettes for visual consistency, but
+this repository does not implement a full Material 3 system — it only
+uses color tokens and shape constants inspired by that design language.
 """
 
 from __future__ import annotations
 import customtkinter as ctk
 
 
-# ─────────────────────────────── Colour Tokens ───────────────────────────────
+# ─────────────────────────────── Colour Tokens ─────────────────────────────
 
 class M3Dark:
-    """Material 3 dark-scheme tokens."""
+    """Dark-scheme tokens (palette adapted from Material-inspired tokens)."""
     # Surfaces
     surface          = "#141218"
     surface_dim      = "#141218"
@@ -58,7 +53,7 @@ class M3Dark:
 
 
 class M3Light:
-    """Material 3 light-scheme tokens."""
+    """Light-scheme tokens (palette adapted from Material-inspired tokens)."""
     surface          = "#FFFBFE"
     surface_dim      = "#DED8E1"
     surface_variant  = "#E7E0EC"
@@ -88,7 +83,7 @@ class M3Light:
     background       = "#FFFBFE"
 
 
-# ─────────────────────────────── Shape Tokens ────────────────────────────────
+# ─────────────────────────────── Shape Tokens ─────────────────────────────
 
 class Shape:
     extra_small  = 4
@@ -99,7 +94,7 @@ class Shape:
     full         = 50    # circular
 
 
-# ─────────────────────────────── Typography ──────────────────────────────────
+# ─────────────────────────────── Typography ──────────────────────────────
 
 class TypeScale:
     display_large  = ("", 57, "normal")
@@ -119,12 +114,20 @@ class TypeScale:
     body_small     = ("", 12, "normal")
 
 
-# ─────────────────────────────── ThemeManager ────────────────────────────────
+# ─────────────────────────────── ThemeManager ────────────────────────────
 
 class ThemeManager:
     """
     Utility class that exposes the active scheme and patches the
-    root window background so it matches Material 3 surface.
+    root window background so it matches the chosen surface.
+
+    This implementation attempts to proactively reconfigure existing
+    widgets when the appearance mode changes. CustomTkinter updates
+    some internals when `ctk.set_appearance_mode()` is called, but
+    many widgets (especially custom ones) may need an explicit
+    reconfigure to pick up new colors. The helper below uses a
+    best-effort heuristic to apply common color-related options on
+    existing widgets and their children.
     """
     _mode: str = "dark"
 
@@ -132,11 +135,70 @@ class ThemeManager:
     scheme: type = M3Dark
 
     @classmethod
+    def _apply_to_widget(cls, widget) -> None:
+        """
+        Try to configure common color attributes on widget and recurse.
+        This is heuristic: some widgets accept 'fg_color'/'bg'/'bg_color' etc.
+        Unsupported options are ignored.
+        """
+        s = cls.scheme
+        # common color attributes used by CustomTkinter and Tk widgets
+        attrs = {
+            "fg_color": s.surface_container,
+            "bg": s.surface,
+            "bg_color": s.surface,
+            "fg": s.on_surface,
+            "text_color": s.on_surface,
+        }
+
+        for name, value in attrs.items():
+            try:
+                widget.configure(**{name: value})
+            except Exception:
+                # widget might not support the option; ignore
+                pass
+
+        # recurse into children
+        try:
+            for child in widget.winfo_children():
+                cls._apply_to_widget(child)
+        except Exception:
+            pass
+
+    @classmethod
     def apply_root(cls, root: ctk.CTk) -> None:
-        root.configure(fg_color=cls.scheme.surface)
+        """
+        Apply the active scheme to the root window and attempt to
+        push colors to already-mounted widgets.
+        """
+        try:
+            # CustomTkinter uses 'fg_color' on CTk frames/windows
+            root.configure(fg_color=cls.scheme.surface)
+        except Exception:
+            try:
+                root.configure(bg=cls.scheme.surface)
+            except Exception:
+                pass
+
+        # Best-effort propagation to children to avoid stale colours
+        try:
+            cls._apply_to_widget(root)
+        except Exception:
+            pass
+
+        # Ensure pending drawing operations run
+        try:
+            root.update_idletasks()
+        except Exception:
+            pass
 
     @classmethod
     def toggle_mode(cls, root: ctk.CTk) -> None:
+        """
+        Toggle between 'dark' and 'light' appearance, update the
+        active color scheme, and re-apply colors to the UI.
+        """
+        # flip mode
         if cls._mode == "dark":
             cls._mode = "light"
             cls.scheme = M3Light
@@ -145,13 +207,15 @@ class ThemeManager:
             cls._mode = "dark"
             cls.scheme = M3Dark
             ctk.set_appearance_mode("dark")
+
+        # Re-apply colours to root and try to refresh widgets.
         cls.apply_root(root)
 
     @classmethod
     def is_dark(cls) -> bool:
         return cls._mode == "dark"
 
-    # ── Helper: returns (fg_color, text_color) for surface cards ────────────
+    # ── Helper: returns (fg_color, text_color) for surface cards ────────
     @classmethod
     def card_colors(cls):
         s = cls.scheme
